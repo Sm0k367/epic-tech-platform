@@ -88,7 +88,8 @@ npm install
 cp .env.example .env.local
 npm run dev
 
-Deploy to Railway in < 60 seconds — just connect this repo and add your API keys.<div align="center">
+Deploy to Railway in < 60 seconds — just connect this repo and add your API keys.
+<div align="center">
   <a href="https://github.com/Sm0k367/epic-tech-platform/fork">
     <img src="https://img.shields.io/badge/FORK%20%26%20BUILD%20THE%20FUTURE-000000?style=for-the-badge&logo=github&logoColor=white&color=8b00ff" height="65" />
   </a>
