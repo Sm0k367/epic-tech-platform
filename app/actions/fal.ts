@@ -11,23 +11,23 @@ export async function generateImage(prompt: string) {
     const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
       input: {
         prompt: prompt,
-        image_size: 'landscape_16_9',
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
+        image_size: 'landscape_16_9' as const,
         num_images: 1,
+        guidance_scale: 3.5,
+        // num_inference_steps removed — not supported in this model version
       },
     });
 
     return {
       success: true,
-      imageUrl: result.images[0].url,
+      imageUrl: result.images?.[0]?.url || '',
       model: 'Flux Pro 1.1',
     };
   } catch (error: any) {
-    console.error(error);
+    console.error('fal.ai error:', error);
     return {
       success: false,
-      error: error.message || 'Generation failed',
+      error: error.message || 'Image generation failed',
     };
   }
 }
