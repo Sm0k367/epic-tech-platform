@@ -3,7 +3,7 @@
 import { fal } from '@fal-ai/client';
 
 fal.config({
-  credentials: process.env.FAL_KEY || process.env.FAL_AI_API_KEY,
+  credentials: process.env.FAL_KEY || process.env.FAL_AI_API_KEY!,
 });
 
 export async function generateImage(prompt: string) {
@@ -13,8 +13,7 @@ export async function generateImage(prompt: string) {
         prompt: prompt,
         image_size: 'landscape_16_9' as const,
         num_images: 1,
-        guidance_scale: 3.5,
-        // num_inference_steps removed — not supported in this model version
+        // Only using parameters that are confirmed valid for this model
       },
     });
 
