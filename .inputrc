@@ -1,0 +1,16 @@
+# Case-insensitive tab completion (cd desk<TAB> → cd Desktop/)
+set completion-ignore-case on
+
+# Treat hyphens and underscores as equivalent during completion
+set completion-map-case on
+
+# Show all completions on first TAB if ambiguous (instead of requiring two TABs)
+set show-all-if-ambiguous on
+
+# Append a slash to completed directory names
+set mark-directories on
+set mark-symlinked-directories on
+
+# Color the common prefix in completion lists for readability
+set colored-completion-prefix on
+set colored-stats on
