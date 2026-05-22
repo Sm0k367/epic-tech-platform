@@ -14,6 +14,7 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
+
     setIsGenerating(true);
     setError('');
     setGeneratedImage(null);
@@ -23,7 +24,7 @@ export default function Home() {
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
     } else {
-      setError(result.error || 'Generation failed');
+      setError(result.error || 'Generation failed. Check FAL_KEY in Railway Variables.');
     }
 
     setIsGenerating(false);
@@ -43,8 +44,8 @@ export default function Home() {
           {['Video Visionary', 'Artist Agent', 'Prompt Pilot', 'Cyber Director', 'Story Weaver'].map((name) => (
             <motion.div
               key={name}
-              whileHover={{ x: 8, scale: 1.02 }}
-              className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/10 cursor-pointer transition-all border border-white/5"
+              whileHover={{ x: 8 }}
+              className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/10 cursor-pointer transition-all"
             >
               <Bot className="w-5 h-5 text-purple-400" />
               <span className="font-medium">{name}</span>
@@ -55,7 +56,6 @@ export default function Home() {
 
       {/* Main Area */}
       <div className="flex-1 flex flex-col">
-        {/* Top Bar */}
         <div className="h-16 border-b border-white/10 flex items-center px-8 glass">
           <div className="flex items-center gap-2">
             <span className="text-emerald-400">● LIVE</span>
@@ -65,22 +65,20 @@ export default function Home() {
             <div className="flex items-center gap-2 text-sm">
               <Zap className="w-4 h-4" /> Credits: 248
             </div>
-            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-2xl ring-2 ring-purple-400/30"></div>
+            <div className="w-9 h-9 bg-gradient-to-br from-purple-500 to-cyan-400 rounded-2xl"></div>
           </div>
         </div>
 
-        {/* Large Preview */}
+        {/* Preview Area */}
         <div className="flex-1 p-8 flex items-center justify-center">
-          <motion.div 
-            className="w-full max-w-6xl aspect-video bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-white/10 relative"
-          >
+          <motion.div className="w-full max-w-6xl aspect-video bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
             {generatedImage ? (
               <img src={generatedImage} alt="Generated" className="w-full h-full object-cover" />
             ) : isGenerating ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80">
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
                 <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
-                <p className="text-purple-400 mt-3">Fast • High Quality</p>
+                <p className="text-purple-400 mt-3">Fast • Cheap • Good Quality</p>
               </div>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
@@ -103,9 +101,7 @@ export default function Home() {
                 key={m.id}
                 onClick={() => setMode(m.id as any)}
                 className={`flex-1 py-5 rounded-3xl font-semibold transition-all flex items-center justify-center gap-3 ${
-                  mode === m.id 
-                    ? 'bg-gradient-to-r from-purple-500 to-cyan-400 text-black shadow-lg' 
-                    : 'bg-white/10 hover:bg-white/20'
+                  mode === m.id ? 'bg-white text-black shadow-xl' : 'bg-white/10 hover:bg-white/20'
                 }`}
               >
                 {m.icon} {m.label}
