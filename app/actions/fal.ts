@@ -13,13 +13,15 @@ export async function generateImage(prompt: string) {
         prompt: prompt,
         image_size: 'landscape_16_9' as const,
         num_images: 1,
-        // Only using parameters that are confirmed valid for this model
       },
     });
 
+    // Safe access to avoid TypeScript errors
+    const imageUrl = (result as any)?.images?.[0]?.url || '';
+
     return {
       success: true,
-      imageUrl: result.images?.[0]?.url || '',
+      imageUrl,
       model: 'Flux Pro 1.1',
     };
   } catch (error: any) {
