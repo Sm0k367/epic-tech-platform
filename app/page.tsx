@@ -13,7 +13,6 @@ export default function Home() {
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
-
     setIsGenerating(true);
     setGeneratedImage(null);
 
@@ -22,7 +21,7 @@ export default function Home() {
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
     } else {
-      alert('Failed to generate image: ' + (result.error || 'Unknown error'));
+      alert('Generation failed: ' + (result.error || 'Unknown error'));
     }
 
     setIsGenerating(false);
@@ -30,7 +29,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
-      {/* LEFT SIDEBAR */}
+      {/* Sidebar */}
       <div className="w-72 border-r border-white/10 p-6 glass flex flex-col">
         <div className="flex items-center gap-3 mb-12">
           <Sparkles className="w-9 h-9 text-purple-400" />
@@ -52,9 +51,9 @@ export default function Home() {
         </div>
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* Main Area */}
       <div className="flex-1 flex flex-col">
-        {/* TOP BAR */}
+        {/* Top Bar */}
         <div className="h-16 border-b border-white/10 flex items-center px-8 glass">
           <div className="flex items-center gap-2">
             <span className="text-emerald-400 text-xl">●</span>
@@ -69,11 +68,9 @@ export default function Home() {
           </div>
         </div>
 
-        {/* PREVIEW AREA - BIGGER & BETTER */}
-        <div className="flex-1 p-8 flex items-center justify-center bg-black/40">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
+        {/* Big Preview Area */}
+        <div className="flex-1 p-8 flex items-center justify-center bg-black/60">
+          <motion.div 
             className="w-full max-w-6xl aspect-video bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative"
           >
             {generatedImage ? (
@@ -83,24 +80,22 @@ export default function Home() {
                 className="w-full h-full object-cover"
               />
             ) : isGenerating ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70">
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
                 <p className="text-2xl font-medium">Generating with Flux Pro...</p>
-                <p className="text-purple-400 mt-2">fal.ai • Real-time</p>
+                <p className="text-purple-400 mt-2">fal.ai • High Quality</p>
               </div>
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-[180px] text-white/10">▶️</div>
-              </div>
+              <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
             )}
           </motion.div>
         </div>
 
-        {/* CONTROLS */}
+        {/* Prompt Area */}
         <div className="p-8 border-t border-white/10 glass">
           <div className="flex gap-3 mb-8">
             {[
-              { id: 'image', icon: <ImageIcon className="w-5 h-5" />, label: 'Image' },
+              { id: 'image', icon: <ImageIcon />, label: 'Image' },
               { id: 'video', icon: '🎬', label: 'Video' },
               { id: 'audio', icon: '🎙️', label: 'Audio' },
               { id: 'text', icon: '📝', label: 'Text' },
@@ -108,8 +103,8 @@ export default function Home() {
               <button
                 key={m.id}
                 onClick={() => setMode(m.id as any)}
-                className={`flex-1 py-5 rounded-3xl font-semibold text-lg transition-all flex items-center justify-center gap-3 ${
-                  mode === m.id ? 'bg-white text-black shadow-xl' : 'bg-white/10 hover:bg-white/20'
+                className={`flex-1 py-5 rounded-3xl font-semibold transition-all flex items-center justify-center gap-3 ${
+                  mode === m.id ? 'bg-white text-black' : 'bg-white/10 hover:bg-white/20'
                 }`}
               >
                 {m.icon} {m.label}
@@ -122,13 +117,13 @@ export default function Home() {
               type="text"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder="A cyberpunk samurai walking through neon Tokyo rain at night, cinematic lighting..."
-              className="w-full bg-white/10 border border-white/30 focus:border-purple-400 rounded-3xl px-8 py-7 text-xl outline-none transition-all"
+              placeholder="A cyberpunk samurai walking through neon Tokyo rain at night..."
+              className="w-full bg-white/10 border border-white/30 focus:border-purple-400 rounded-3xl px-8 py-7 text-xl outline-none"
             />
             <button
               onClick={handleGenerate}
               disabled={isGenerating}
-              className="absolute right-4 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-400 hover:from-purple-600 hover:to-cyan-500 text-black font-bold px-12 py-5 rounded-3xl flex items-center gap-3 transition-all disabled:opacity-70"
+              className="absolute right-4 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-bold px-12 py-5 rounded-3xl flex items-center gap-3 disabled:opacity-70"
             >
               {isGenerating ? 'Generating...' : 'Generate'}
               <Play className="w-6 h-6" />
