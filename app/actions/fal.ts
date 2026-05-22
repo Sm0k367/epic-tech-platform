@@ -1,40 +1,48 @@
 'use server';
 
-import { fal } from '@fal-ai/client';
-
-fal.config({
-  credentials: process.env.FAL_KEY || process.env.FAL_AI_API_KEY!,
-});
+const ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+const API_TOKEN = process.env.CLOUDFLARE_API_TOKEN;
 
 export async function generateImage(prompt: string) {
   try {
-    const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
-      input: {
-        prompt: prompt,
-        image_size: "landscape_4_3" as const,
-        num_images: 1,
-        output_format: "jpeg",
-        safety_tolerance: "2",
-      },
-    });
+    const response = await fetch(
+      `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/black-forest-labs/flux-1-schnell`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${API_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          prompt: prompt,
+          num_steps: 20,
+          guidance: 3.5,
+        }),
+      }
+    );
 
-    const imageUrl = (result as any)?.images?.[0]?.url || '';
-
-    if (!imageUrl) {
-      return { 
-        success: false, 
-        error: "No image returned. Check your credits on fal.ai" 
-      };
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Cloudflare Error: ${error}`);
     }
+
+    const data = await response.json();
+    const imageBase64 = data.result?.image;
+
+    if (!imageBase64) {
+      return { success: false, error: "No image returned from Cloudflare" };
+    }
+
+    const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
 
     return { 
       success: true, 
       imageUrl,
-      model: "Flux Pro 1.1"
+      model: "Flux Schnell (Cloudflare)"
     };
 
   } catch (error: any) {
-    console.error("fal.ai Error:", error);
+    console.error("Cloudflare AI Error:", error);
     return { 
       success: false, 
       error: error.message || "Generation failed" 
