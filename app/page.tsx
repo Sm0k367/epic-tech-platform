@@ -24,7 +24,7 @@ export default function Home() {
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
     } else {
-      setError(result.error || 'Generation failed. Check FAL_KEY in Railway Variables.');
+      setError(result.error || 'Generation failed');
     }
 
     setIsGenerating(false);
@@ -54,7 +54,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <div className="h-16 border-b border-white/10 flex items-center px-8 glass">
           <div className="flex items-center gap-2">
@@ -69,7 +69,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Preview Area */}
+        {/* Preview */}
         <div className="flex-1 p-8 flex items-center justify-center">
           <motion.div className="w-full max-w-6xl aspect-video bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
             {generatedImage ? (
@@ -77,8 +77,8 @@ export default function Home() {
             ) : isGenerating ? (
               <div className="absolute inset-0 flex flex-col items-center justify-center">
                 <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
-                <p className="text-purple-400 mt-3">Fast • Cheap • Good Quality</p>
+                <p className="text-2xl font-medium">Generating...</p>
+                <p className="text-purple-400 mt-3">Flux Schnell • Fast Mode</p>
               </div>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
