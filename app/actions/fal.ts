@@ -13,18 +13,22 @@ export async function generateImage(prompt: string) {
         prompt: prompt,
         image_size: "landscape_4_3" as const,
         num_images: 1,
+        output_format: "jpeg",
       },
     });
 
     const imageUrl = (result as any)?.images?.[0]?.url || '';
 
     if (!imageUrl) {
-      return { success: false, error: "No image returned. Check your FAL_KEY and credits." };
+      return { success: false, error: "No image returned from fal.ai" };
     }
 
-    return { success: true, imageUrl };
+    return { success: true, imageUrl, model: "Flux Schnell" };
   } catch (error: any) {
     console.error("fal.ai Error:", error);
-    return { success: false, error: error.message || "Generation failed" };
+    return { 
+      success: false, 
+      error: error.message || "Generation failed. Check FAL_KEY and credits." 
+    };
   }
 }
