@@ -8,27 +8,36 @@ fal.config({
 
 export async function generateImage(prompt: string) {
   try {
-    const result = await fal.subscribe('fal-ai/flux-schnell', {
+    const result = await fal.subscribe('fal-ai/flux-pro/v1.1', {
       input: {
         prompt: prompt,
         image_size: "landscape_4_3" as const,
         num_images: 1,
         output_format: "jpeg",
+        safety_tolerance: "2",
       },
     });
 
     const imageUrl = (result as any)?.images?.[0]?.url || '';
 
     if (!imageUrl) {
-      return { success: false, error: "No image returned from fal.ai" };
+      return { 
+        success: false, 
+        error: "No image returned. Check your credits on fal.ai" 
+      };
     }
 
-    return { success: true, imageUrl, model: "Flux Schnell" };
+    return { 
+      success: true, 
+      imageUrl,
+      model: "Flux Pro 1.1"
+    };
+
   } catch (error: any) {
     console.error("fal.ai Error:", error);
     return { 
       success: false, 
-      error: error.message || "Generation failed. Check FAL_KEY and credits." 
+      error: error.message || "Generation failed" 
     };
   }
 }
