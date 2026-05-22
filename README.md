@@ -25,7 +25,17 @@
       🔥 Cinematic Demo
     </div>
   </div>
+<div align="center">
 
+  <h2>Built to Blow Minds</h2>
+
+  <a href="https://github.com/Sm0k367/agent-platform/fork">
+    <img src="https://img.shields.io/badge/Fork%20%26%20Build%20The%20Future-000000?style=for-the-badge&logo=github&logoColor=white&color=purple" height="60" />
+  </a>
+
+  
+  <strong> Star this repo if you're ready to redefine creativity.</strong> 
+  </div> 
   <p>
     <a href="https://github.com/Sm0k367/agent-platform/stargazers">
       <img src="https://img.shields.io/github/stars/Sm0k367/agent-platform?style=social&logo=github&label=Star" alt="Stars" />
@@ -122,17 +132,6 @@ Agent Memory & Character Consistency
 Real-time collaborative studio
 Mobile app (React Native + Expo)
 On-prem / Self-hosted version
-
-<div align="center">
-
-  <h2>Built to Blow Minds</h2>
-
-  <a href="https://github.com/Sm0k367/agent-platform/fork">
-    <img src="https://img.shields.io/badge/Fork%20%26%20Build%20The%20Future-000000?style=for-the-badge&logo=github&logoColor=white&color=purple" height="60" />
-  </a>
-
-  
-  <strong> Star this repo if you're ready to redefine creativity.</strong></div>
 
 Made with  by Epic Tech AI
 © 2026 — All minds officially blown.
