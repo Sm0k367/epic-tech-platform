@@ -9,12 +9,11 @@ body {
 }
 
 .glass {
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .neon-purple {
-  text-shadow: 0 0 15px #a855f7,
-               0 0 30px #a855f7;
+  text-shadow: 0 0 15px #a855f7, 0 0 30px #a855f7;
 }
