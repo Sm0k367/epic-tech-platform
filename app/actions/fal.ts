@@ -22,7 +22,7 @@ export async function generateImage(prompt: string) {
     if (!imageUrl) {
       return { 
         success: false, 
-        error: "No image returned. Check your credits." 
+        error: "No image returned from fal.ai. Check your credits." 
       };
     }
 
