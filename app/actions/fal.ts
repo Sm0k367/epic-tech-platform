@@ -19,7 +19,7 @@ export async function generateImage(prompt: string) {
     const imageUrl = (result as any)?.images?.[0]?.url || '';
 
     if (!imageUrl) {
-      return { success: false, error: "No image returned from fal.ai" };
+      return { success: false, error: "No image returned. Check your FAL_KEY and credits." };
     }
 
     return { success: true, imageUrl };
