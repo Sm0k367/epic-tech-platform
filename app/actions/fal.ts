@@ -16,19 +16,17 @@ export async function generateImage(prompt: string) {
       },
     });
 
-    // Safe access to avoid TypeScript errors
     const imageUrl = (result as any)?.images?.[0]?.url || '';
 
-    return {
-      success: true,
-      imageUrl,
-      model: 'Flux Pro 1.1',
+    return { 
+      success: true, 
+      imageUrl 
     };
   } catch (error: any) {
-    console.error('fal.ai error:', error);
-    return {
-      success: false,
-      error: error.message || 'Image generation failed',
+    console.error("fal.ai Error:", error);
+    return { 
+      success: false, 
+      error: error.message || "Generation failed" 
     };
   }
 }
