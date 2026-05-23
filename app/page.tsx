@@ -14,7 +14,7 @@ export default function Home() {
 
   // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
-    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent. How can I help you create something amazing today?" }
+    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent. What would you like to create today?" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -36,7 +36,7 @@ export default function Home() {
     setIsGenerating(false);
   };
 
-  // Real Chat with Cloudflare AI
+  // Real Chat using Server Action
   const sendChatMessage = async () => {
     if (!chatInput.trim() || isChatLoading) return;
 
@@ -46,33 +46,22 @@ export default function Home() {
     setIsChatLoading(true);
 
     try {
-      const response = await fetch(
-        `https://api.cloudflare.com/client/v4/accounts/${process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3-8b-instruct`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${process.env.NEXT_PUBLIC_CLOUDFLARE_API_TOKEN}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: [
-              { role: "system", content: "You are Epic Tech AI Agent, a helpful and creative cinematic AI assistant." },
-              ...chatMessages,
-              { role: "user", content: userMessage }
-            ],
-            max_tokens: 500,
-          }),
-        }
-      );
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, history: chatMessages }),
+      });
 
       const data = await response.json();
-      const reply = data.result?.response || "Sorry, I couldn't process that.";
 
-      setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: data.reply || "Sorry, I couldn't respond right now." 
+      }]);
     } catch (err) {
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "Sorry, I'm having trouble connecting right now. Please try again." 
+        content: "Sorry, I'm having trouble connecting. Please try again." 
       }]);
     }
 
@@ -81,7 +70,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
-      {/* Sidebar */}
+      {/* Sidebar - same as before */}
       <div className="w-72 border-r border-white/10 p-6 glass flex flex-col">
         <div className="flex items-center gap-3 mb-12">
           <Sparkles className="w-9 h-9 text-purple-400" />
@@ -174,26 +163,20 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat Agent Tab - REAL AI */}
+        {/* Chat Tab */}
         {activeTab === 'chat' && (
           <div className="flex-1 flex flex-col p-8">
-            <div className="flex-1 overflow-y-auto space-y-6 mb-6 pr-4">
+            <div className="flex-1 overflow-y-auto space-y-6 mb-6">
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[75%] p-5 rounded-3xl ${
-                    msg.role === 'user' 
-                      ? 'bg-purple-600 text-white' 
-                      : 'bg-white/10'
+                    msg.role === 'user' ? 'bg-purple-600' : 'bg-white/10'
                   }`}>
                     {msg.content}
                   </div>
                 </div>
               ))}
-              {isChatLoading && (
-                <div className="flex justify-start">
-                  <div className="bg-white/10 p-5 rounded-3xl">Thinking...</div>
-                </div>
-              )}
+              {isChatLoading && <div className="text-purple-400">Thinking...</div>}
             </div>
 
             <div className="flex gap-3">
@@ -202,7 +185,7 @@ export default function Home() {
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                placeholder="Ask the AI Agent anything..."
+                placeholder="Talk to your AI Agent..."
                 className="flex-1 bg-white/10 border border-white/30 rounded-3xl px-6 py-4 outline-none focus:border-purple-400"
               />
               <button 
@@ -222,10 +205,7 @@ export default function Home() {
             <div>
               <Play className="w-24 h-24 mx-auto text-white/20 mb-6" />
               <h3 className="text-3xl mb-3">Media Player</h3>
-              <p className="text-white/60 max-w-md mx-auto">
-                Generated videos and audio will appear here with full playback controls.
-              </p>
-              <p className="text-sm text-white/40 mt-8">Feature coming soon</p>
+              <p className="text-white/60">Your generated videos and audio will play here.</p>
             </div>
           </div>
         )}
@@ -233,4 +213,3 @@ export default function Home() {
     </div>
   );
 }
-
