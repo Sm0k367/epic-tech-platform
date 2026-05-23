@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
           messages: [
             { 
               role: "system", 
-              content: "You are Epic Tech AI Agent™️, a creative, cinematic, and highly intelligent AI assistant." 
+              content: "You are Epic Tech AI Agent™️, a creative, cinematic, and highly intelligent AI assistant specialized in media generation." 
             },
             ...history,
             { role: "user", content: message }
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (!response.ok) {
-      throw new Error(`Cloudflare Chat Error: ${response.status}`);
+      throw new Error(`API Error: ${response.status}`);
     }
 
     const data = await response.json();
@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error("Chat API Error:", error);
+    console.error("Chat Error:", error);
     return Response.json({ 
       reply: "Sorry, I'm having trouble connecting right now. Please try again." 
     });
