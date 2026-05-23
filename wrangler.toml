@@ -1,0 +1,7 @@
+name = "epic-tech-platform"
+compatibility_date = "2026-05-01"
+pages_build_output_dir = ".vercel/output/static"
+
+# Optional: Add this if you want better logging
+[vars]
+NODE_VERSION = "20"
