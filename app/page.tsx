@@ -10,12 +10,53 @@ export default function Home() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState('');
-  const [activeTab, setActiveTab] = useState<'generate' | 'chat' | 'media'>('media');
+  const [activeTab, setActiveTab] = useState<'generate' | 'chat' | 'media'>('generate');
+
+  // Chat State
+  const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
+    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent. How can I help you create today?" }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   // Media Player State
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
-  const [isPlaying, setIsPlaying] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setIsGenerating(true);
+    setError('');
+    setGeneratedImage(null);
+
+    const result = await generateImage(prompt);
+
+    if (result.success && result.imageUrl) {
+      setGeneratedImage(result.imageUrl);
+    } else {
+      setError(result.error || 'Generation failed. Check your FAL_KEY.');
+    }
+
+    setIsGenerating(false);
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+
+    const userMessage = chatInput;
+    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    // Simulate AI response for now (you can connect real model later)
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "That's a fantastic idea! I can help you generate that. Would you like an image or video version?" 
+      }]);
+      setIsChatLoading(false);
+    }, 900);
+  };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -30,10 +71,7 @@ export default function Home() {
 
   const playMedia = (index: number) => {
     setCurrentMediaIndex(index);
-    setIsPlaying(true);
   };
-
-  const togglePlay = () => setIsPlaying(!isPlaying);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
@@ -55,7 +93,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <div className="h-16 border-b border-white/10 flex items-center px-8 glass">
           <div className="flex items-center gap-2">
@@ -89,37 +127,109 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Media Player Tab - Fully Functional */}
-        {activeTab === 'media' && (
+        {/* GENERATE TAB */}
+        {activeTab === 'generate' && (
           <div className="flex-1 p-8 flex flex-col">
-            <div className="mb-8">
-              <label className="cursor-pointer bg-white/10 hover:bg-white/20 transition-colors border border-white/30 rounded-3xl px-8 py-4 flex items-center justify-center gap-3 w-fit">
-                <Upload className="w-6 h-6" />
-                <span className="font-medium">Upload MP3 or MP4 Files</span>
-                <input type="file" multiple accept="audio/*,video/*" onChange={handleFileUpload} className="hidden" />
-              </label>
+            <div className="flex-1 flex items-center justify-center">
+              <motion.div className="w-full max-w-6xl aspect-video bg-zinc-950 rounded-3xl overflow-hidden shadow-2xl border border-white/20 relative">
+                {generatedImage ? (
+                  <img src={generatedImage} alt="Generated" className="w-full h-full object-cover" />
+                ) : isGenerating ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
+                    <p className="text-2xl font-medium">Generating...</p>
+                  </div>
+                ) : (
+                  <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
+                )}
+              </motion.div>
             </div>
 
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="mt-8">
+              {error && <p className="text-red-400 text-center mb-4">{error}</p>}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  placeholder="A cyberpunk samurai walking through neon Tokyo rain at night..."
+                  className="w-full bg-white/10 border border-white/30 focus:border-purple-400 rounded-3xl px-8 py-7 text-xl outline-none"
+                />
+                <button
+                  onClick={handleGenerate}
+                  disabled={isGenerating || !prompt.trim()}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-bold px-14 py-5 rounded-3xl flex items-center gap-3 hover:brightness-110 disabled:opacity-60"
+                >
+                  {isGenerating ? 'Generating...' : 'Generate'}
+                  <Play className="w-6 h-6" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* CHAT AGENT TAB */}
+        {activeTab === 'chat' && (
+          <div className="flex-1 flex flex-col p-8">
+            <div className="flex-1 overflow-y-auto space-y-6 mb-6 pr-4">
+              {chatMessages.map((msg, i) => (
+                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[75%] p-5 rounded-3xl ${
+                    msg.role === 'user' ? 'bg-purple-600' : 'bg-white/10'
+                  }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
+              {isChatLoading && <div className="text-purple-400">Thinking...</div>}
+            </div>
+
+            <div className="flex gap-3">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                placeholder="Talk to your AI Agent..."
+                className="flex-1 bg-white/10 border border-white/30 rounded-3xl px-6 py-4 outline-none focus:border-purple-400"
+              />
+              <button 
+                onClick={sendChatMessage}
+                disabled={isChatLoading || !chatInput.trim()}
+                className="bg-purple-600 px-10 rounded-3xl font-semibold hover:bg-purple-500 disabled:opacity-50"
+              >
+                Send
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* MEDIA PLAYER TAB */}
+        {activeTab === 'media' && (
+          <div className="flex-1 p-8">
+            <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30 rounded-3xl px-8 py-4 inline-flex items-center gap-3 mb-8">
+              <Upload className="w-6 h-6" />
+              Upload MP3 or MP4 Files
+              <input type="file" multiple accept="audio/*,video/*" onChange={handleFileUpload} className="hidden" />
+            </label>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Playlist */}
               <div className="bg-white/5 rounded-3xl p-6 border border-white/10">
-                <h3 className="text-lg font-semibold mb-4">Your Library ({mediaFiles.length})</h3>
+                <h3 className="font-semibold mb-4">Your Library ({mediaFiles.length})</h3>
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                   {mediaFiles.length === 0 ? (
-                    <p className="text-white/40 text-center py-12">No files uploaded yet</p>
+                    <p className="text-white/40 text-center py-12">No files yet. Upload some MP3 or MP4 files.</p>
                   ) : (
                     mediaFiles.map((media, index) => (
                       <div
                         key={index}
                         onClick={() => playMedia(index)}
-                        className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all hover:bg-white/10 ${currentMediaIndex === index ? 'bg-white/10' : ''}`}
+                        className={`p-4 rounded-2xl cursor-pointer hover:bg-white/10 flex items-center gap-4 ${currentMediaIndex === index ? 'bg-white/10' : ''}`}
                       >
-                        <div className="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center">
-                          {media.type.startsWith('video') ? '🎬' : '🎵'}
-                        </div>
+                        <div className="text-2xl">{media.type.startsWith('video') ? '🎬' : '🎵'}</div>
                         <div className="flex-1 truncate">
-                          <p className="font-medium truncate">{media.name}</p>
-                          <p className="text-xs text-white/50">{media.type}</p>
+                          <p className="truncate">{media.name}</p>
                         </div>
                       </div>
                     ))
@@ -128,60 +238,25 @@ export default function Home() {
               </div>
 
               {/* Player */}
-              <div className="bg-zinc-950 rounded-3xl overflow-hidden border border-white/10 flex flex-col">
-                {mediaFiles.length > 0 && mediaFiles[currentMediaIndex] ? (
-                  <>
-                    <div className="flex-1 bg-black flex items-center justify-center p-8">
-                      {mediaFiles[currentMediaIndex].type.startsWith('video') ? (
-                        <video
-                          src={mediaFiles[currentMediaIndex].url}
-                          controls
-                          autoPlay
-                          className="max-h-[420px] rounded-2xl"
-                        />
-                      ) : (
-                        <audio
-                          src={mediaFiles[currentMediaIndex].url}
-                          controls
-                          autoPlay
-                          className="w-full"
-                        />
-                      )}
-                    </div>
-
-                    <div className="p-6 border-t border-white/10">
-                      <p className="font-medium text-center mb-6 truncate">
-                        {mediaFiles[currentMediaIndex].name}
-                      </p>
-
-                      <div className="flex justify-center gap-6">
-                        <button onClick={() => setCurrentMediaIndex(Math.max(0, currentMediaIndex - 1))} className="p-4 hover:bg-white/10 rounded-full">
-                          <SkipBack className="w-8 h-8" />
-                        </button>
-                        <button onClick={togglePlay} className="p-6 bg-purple-600 hover:bg-purple-500 rounded-full transition-colors">
-                          {isPlaying ? <Pause className="w-10 h-10" /> : <Play className="w-10 h-10 ml-1" />}
-                        </button>
-                        <button onClick={() => setCurrentMediaIndex(Math.min(mediaFiles.length - 1, currentMediaIndex + 1))} className="p-4 hover:bg-white/10 rounded-full">
-                          <SkipForward className="w-8 h-8" />
-                        </button>
-                      </div>
-                    </div>
-                  </>
+              <div className="bg-zinc-950 rounded-3xl border border-white/10 p-6 flex flex-col">
+                {mediaFiles.length > 0 ? (
+                  <div>
+                    {mediaFiles[currentMediaIndex].type.startsWith('video') ? (
+                      <video src={mediaFiles[currentMediaIndex].url} controls className="w-full rounded-2xl" />
+                    ) : (
+                      <audio src={mediaFiles[currentMediaIndex].url} controls className="w-full" />
+                    )}
+                    <p className="text-center mt-6 font-medium">{mediaFiles[currentMediaIndex].name}</p>
+                  </div>
                 ) : (
-                  <div className="flex-1 flex items-center justify-center text-center">
-                    <div>
-                      <Play className="w-20 h-20 mx-auto text-white/20 mb-6" />
-                      <p className="text-xl">Upload media files to start playing</p>
-                    </div>
+                  <div className="flex-1 flex items-center justify-center text-white/40">
+                    Upload files to start playing
                   </div>
                 )}
               </div>
             </div>
           </div>
         )}
-
-        {/* Other tabs remain the same as before */}
-        {/* ... (Generate and Chat tabs) */}
       </div>
     </div>
   );
