@@ -33,7 +33,7 @@ export default function Home() {
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Media Effects
+  // Load/Save Media
   useEffect(() => {
     const saved = localStorage.getItem('epicMediaFiles');
     if (saved) setMediaFiles(JSON.parse(saved));
@@ -43,6 +43,7 @@ export default function Home() {
     localStorage.setItem('epicMediaFiles', JSON.stringify(mediaFiles));
   }, [mediaFiles]);
 
+  // Media Progress
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
@@ -184,7 +185,7 @@ export default function Home() {
         </div>
 
         <div className="bg-zinc-950 border border-white/10 rounded-3xl p-10 min-h-[65vh]">
-          {/* ==================== GENERATE TAB ==================== */}
+          {/* Generate Tab */}
           {activeTab === 'generate' && (
             <div className="max-w-4xl mx-auto text-center">
               <div className="aspect-video bg-black rounded-3xl overflow-hidden border border-white/10 mb-10 flex items-center justify-center">
@@ -220,7 +221,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ==================== CHAT TAB ==================== */}
+          {/* Chat Tab */}
           {activeTab === 'chat' && (
             <div className="max-w-4xl mx-auto h-[58vh] flex flex-col">
               {currentProvider && (
@@ -262,13 +263,13 @@ export default function Home() {
             </div>
           )}
 
-          {/* ==================== MEDIA PLAYER TAB ==================== */}
+          {/* Media Player Tab */}
           {activeTab === 'media' && (
             <div className="max-w-6xl mx-auto">
               <label
                 onDrop={(e) => { e.preventDefault(); handleFileUpload(e.dataTransfer.files); }}
                 onDragOver={(e) => e.preventDefault()}
-                className="cursor-pointer border-2 border-dashed border-white/30 hover:border-purple-400 rounded-3xl p-12 flex flex-col items-center justify-center mb-10"
+                className="cursor-pointer border-2 border-dashed border-white/30 hover:border-purple-400 rounded-3xl p-12 flex flex-col items-center justify-center mb-10 transition-all"
               >
                 <Upload className="w-16 h-16 mb-4 text-purple-400" />
                 <p className="text-2xl font-medium">Drop videos or music here</p>
@@ -287,7 +288,7 @@ export default function Home() {
                 {/* Library */}
                 <div className="lg:col-span-4 bg-white/5 rounded-3xl p-6 border border-white/10">
                   <h3 className="font-semibold mb-6">Library ({mediaFiles.length})</h3>
-                  <div className="space-y-3 max-h-[500px] overflow-y-auto">
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2">
                     {mediaFiles.length === 0 ? (
                       <p className="text-white/40 text-center py-20">No files uploaded yet</p>
                     ) : (
@@ -298,7 +299,7 @@ export default function Home() {
                           className={`p-4 rounded-2xl flex gap-4 items-center cursor-pointer hover:bg-white/10 transition-all ${currentMediaIndex === i ? 'bg-purple-600/20 border border-purple-500' : ''}`}
                         >
                           <span className="text-3xl">{media.type.startsWith('video') ? '🎬' : '🎵'}</span>
-                          <div className="flex-1 truncate">{media.name}</div>
+                          <div className="flex-1 truncate text-sm">{media.name}</div>
                           <button onClick={(e) => { e.stopPropagation(); deleteMedia(i); }} className="text-red-400 hover:text-red-500">
                             <Trash2 size={18} />
                           </button>
@@ -312,63 +313,33 @@ export default function Home() {
                 <div className="lg:col-span-8 bg-black rounded-3xl p-8 border border-white/10 flex flex-col">
                   {mediaFiles.length > 0 ? (
                     <>
-                      <div className="flex-1 flex items-center justify-center bg-zinc-950 rounded-2xl mb-8 overflow-hidden">
+                      <div className="flex-1 flex items-center justify-center bg-zinc-950 rounded-2xl mb-8 overflow-hidden min-h-[400px]">
                         {mediaFiles[currentMediaIndex].type.startsWith('video') ? (
                           <video
                             ref={mediaRef as any}
                             src={mediaFiles[currentMediaIndex].url}
-                            className="max-h-[420px] w-full"
+                            className="max-h-[420px] w-full rounded-xl"
+                            controls
                             onPlay={() => setIsPlaying(true)}
                             onPause={() => setIsPlaying(false)}
                           />
                         ) : (
-                          <audio ref={mediaRef as any} src={mediaFiles[currentMediaIndex].url} />
+                          <audio
+                            ref={mediaRef as any}
+                            src={mediaFiles[currentMediaIndex].url}
+                            controls
+                            className="w-full max-w-2xl"
+                          />
                         )}
                       </div>
 
-                      <p className="text-center font-medium mb-6 truncate">{mediaFiles[currentMediaIndex].name}</p>
-
-                      <input
-                        type="range"
-                        value={progress}
-                        onChange={(e) => {
-                          const newTime = (Number(e.target.value) / 100) * duration;
-                          if (mediaRef.current) mediaRef.current.currentTime = newTime;
-                        }}
-                        className="w-full accent-purple-500 mb-2"
-                      />
-
-                      <div className="flex justify-between text-xs text-white/50 mb-6">
-                        <span>{Math.floor(currentTime)}s</span>
-                        <span>{Math.floor(duration)}s</span>
-                      </div>
-
-                      <div className="flex items-center justify-center gap-8">
-                        <button onClick={handlePrev}><SkipBack size={32} /></button>
-                        <button onClick={togglePlay} className="bg-purple-600 hover:bg-purple-500 w-16 h-16 rounded-full flex items-center justify-center transition-all">
-                          {isPlaying ? <Pause size={32} /> : <Play size={32} className="ml-1" />}
-                        </button>
-                        <button onClick={handleNext}><SkipForward size={32} /></button>
-
-                        <div className="flex items-center gap-3 ml-6">
-                          <Volume2 size={20} />
-                          <input
-                            type="range"
-                            min="0" max="1" step="0.01"
-                            value={volume}
-                            onChange={(e) => {
-                              const vol = Number(e.target.value);
-                              setVolume(vol);
-                              if (mediaRef.current) mediaRef.current.volume = vol;
-                            }}
-                            className="w-28 accent-purple-500"
-                          />
-                        </div>
-                      </div>
+                      <p className="text-center font-medium mb-6 px-4 truncate">
+                        {mediaFiles[currentMediaIndex].name}
+                      </p>
                     </>
                   ) : (
                     <div className="flex-1 flex items-center justify-center text-white/40 text-xl">
-                      Upload media to start playing
+                      Upload media files to start playing
                     </div>
                   )}
                 </div>
