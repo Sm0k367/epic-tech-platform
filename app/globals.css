@@ -3,18 +3,23 @@
 @tailwind utilities;
 
 body {
-  background: #050505;
-  color: white;
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Inter', system_ui, sans-serif;
 }
 
 .glass {
-  background: rgba(15, 15, 20, 0.85);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
 }
 
 .neon-purple {
-  text-shadow: 0 0 20px #a855f7,
-               0 0 40px #a855f7;
+  text-shadow: 0 0 15px rgb(168 85 247);
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(168, 85, 247, 0.5);
+  border-radius: 20px;
 }
