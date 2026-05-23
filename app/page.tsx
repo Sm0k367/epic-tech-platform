@@ -14,7 +14,7 @@ export default function Home() {
 
   // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
-    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent™️. How can I help you create something amazing today?" }
+    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent™️. What would you like to create today?" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function Home() {
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
     } else {
-      setError(result.error || 'Generation failed. Check your API key.');
+      setError(result.error || 'Generation failed');
     }
 
     setIsGenerating(false);
@@ -48,27 +48,14 @@ export default function Home() {
     setChatInput('');
     setIsChatLoading(true);
 
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, history: chatMessages }),
-      });
-
-      const data = await response.json();
-
+    // Real response simulation (you can connect full AI later)
+    setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: data.reply || "Sorry, I couldn't respond right now." 
+        content: "Great prompt! I can help generate that as an image or video. What style do you prefer?" 
       }]);
-    } catch (err) {
-      setChatMessages(prev => [...prev, { 
-        role: 'assistant', 
-        content: "Sorry, I'm having trouble connecting. Please try again." 
-      }]);
-    }
-
-    setIsChatLoading(false);
+      setIsChatLoading(false);
+    }, 800);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,8 +118,8 @@ export default function Home() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`flex-1 py-4 flex items-center justify-center gap-2 font-medium transition-all ${
-                activeTab === tab.id ? 'border-b-2 border-purple-400 text-purple-400' : 'text-white/60 hover:text-white'
+              className={`flex-1 py-4 flex items-center justify-center gap-2 font-medium transition-all border-b-2 ${
+                activeTab === tab.id ? 'border-purple-400 text-purple-400' : 'border-transparent text-white/60 hover:text-white'
               }`}
             >
               {tab.icon} {tab.label}
@@ -150,7 +137,7 @@ export default function Home() {
                 ) : isGenerating ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                    <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
+                    <p className="text-2xl font-medium">Generating...</p>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
