@@ -32,7 +32,7 @@ export default function Home() {
   const mediaRef = useRef<HTMLVideoElement | HTMLAudioElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load/Save media files
+  // Load/Save media from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('epicMediaFiles');
     if (saved) setMediaFiles(JSON.parse(saved));
@@ -42,7 +42,7 @@ export default function Home() {
     localStorage.setItem('epicMediaFiles', JSON.stringify(mediaFiles));
   }, [mediaFiles]);
 
-  // Media event listeners
+  // Media controls
   useEffect(() => {
     const media = mediaRef.current;
     if (!media) return;
@@ -64,9 +64,49 @@ export default function Home() {
     };
   }, [currentMediaIndex]);
 
-  const handleGenerate = async () => { /* same as before */ };
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setIsGenerating(true);
+    setError('');
 
-  const sendChatMessage = async () => { /* same as before */ };
+    const result = await generateImage(prompt);
+    
+    if (result.success && result.imageUrl) {
+      setGeneratedImage(result.imageUrl);
+    } else {
+      setError(result.error || 'Generation failed');
+    }
+    setIsGenerating(false);
+  };
+
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
+
+    const userMessage = chatInput.trim();
+    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          message: userMessage, 
+          history: chatMessages 
+        }),
+      });
+
+      const data = await res.json();
+      setChatMessages(prev => [...prev, { role: 'assistant', content: data.reply || "Got it!" }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "Sorry, I'm having trouble connecting right now." 
+      }]);
+    }
+    setIsChatLoading(false);
+  };
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
@@ -96,17 +136,23 @@ export default function Home() {
 
   const togglePlay = () => {
     if (!mediaRef.current) return;
-    isPlaying ? mediaRef.current.pause() : mediaRef.current.play();
+    if (isPlaying) {
+      mediaRef.current.pause();
+    } else {
+      mediaRef.current.play();
+    }
     setIsPlaying(!isPlaying);
   };
 
   const handleNext = () => {
+    if (mediaFiles.length === 0) return;
     const next = (currentMediaIndex + 1) % mediaFiles.length;
     setCurrentMediaIndex(next);
     setIsPlaying(true);
   };
 
   const handlePrev = () => {
+    if (mediaFiles.length === 0) return;
     const prev = (currentMediaIndex - 1 + mediaFiles.length) % mediaFiles.length;
     setCurrentMediaIndex(prev);
     setIsPlaying(true);
@@ -169,14 +215,73 @@ export default function Home() {
 
           {/* Tab Contents */}
           <div className="flex-1 overflow-auto p-8">
-            {activeTab === 'generate' && ( /* your generate code */ )}
-            
-            {activeTab === 'chat' && ( /* your chat code */ )}
+            {/* Generate Tab */}
+            {activeTab === 'generate' && (
+              <div className="max-w-4xl mx-auto">
+                <div className="aspect-video bg-zinc-950 rounded-3xl border border-white/10 mb-8 flex items-center justify-center overflow-hidden">
+                  {generatedImage ? (
+                    <img src={generatedImage} alt="Generated" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="text-white/20 text-8xl">🎥</div>
+                  )}
+                </div>
 
-            {/* ==================== FULL MEDIA PLAYER ==================== */}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    placeholder="A cyberpunk samurai walking through neon Tokyo rain at night..."
+                    className="w-full bg-white/5 border border-white/20 rounded-3xl px-8 py-6 text-lg focus:border-purple-500 outline-none"
+                  />
+                  <button
+                    onClick={handleGenerate}
+                    disabled={isGenerating || !prompt.trim()}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 bg-purple-600 hover:bg-purple-500 px-10 py-3 rounded-2xl font-semibold disabled:opacity-50"
+                  >
+                    {isGenerating ? 'Generating...' : 'Generate'}
+                  </button>
+                </div>
+                {error && <p className="text-red-400 mt-3">{error}</p>}
+              </div>
+            )}
+
+            {/* Chat Tab */}
+            {activeTab === 'chat' && (
+              <div className="max-w-3xl mx-auto h-full flex flex-col">
+                <div className="flex-1 overflow-y-auto space-y-6 mb-6 pr-4">
+                  {chatMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[80%] p-5 rounded-3xl ${msg.role === 'user' ? 'bg-purple-600' : 'bg-white/10'}`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isChatLoading && <div className="text-purple-400">Thinking...</div>}
+                </div>
+
+                <div className="flex gap-3">
+                  <input
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
+                    placeholder="Talk to Epic Tech AI Agent..."
+                    className="flex-1 bg-white/5 border border-white/20 rounded-3xl px-6 py-4 focus:border-purple-500 outline-none"
+                  />
+                  <button 
+                    onClick={sendChatMessage}
+                    disabled={isChatLoading || !chatInput.trim()}
+                    className="bg-purple-600 px-8 rounded-3xl font-semibold hover:bg-purple-500 disabled:opacity-50"
+                  >
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Media Player Tab */}
             {activeTab === 'media' && (
               <div className="h-full flex flex-col">
-                {/* Drag & Drop Upload */}
                 <label 
                   onDrop={(e) => { e.preventDefault(); handleFileUpload(e.dataTransfer.files); }}
                   onDragOver={(e) => e.preventDefault()}
@@ -238,11 +343,10 @@ export default function Home() {
                           )}
                         </div>
 
-                        <div className="text-center mb-6 font-medium">
+                        <div className="text-center mb-6 font-medium truncate">
                           {mediaFiles[currentMediaIndex].name}
                         </div>
 
-                        {/* Progress Bar */}
                         <input
                           type="range"
                           value={progress}
@@ -258,7 +362,6 @@ export default function Home() {
                           <span>{Math.floor(duration)}s</span>
                         </div>
 
-                        {/* Controls */}
                         <div className="flex items-center justify-center gap-8">
                           <button onClick={handlePrev}><SkipBack size={32} /></button>
                           <button 
