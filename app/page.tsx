@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Bot, Sparkles, Zap, Image as ImageIcon, Music, MessageSquare } from 'lucide-react';
+import { Play, Bot, Sparkles, Zap, Image as ImageIcon, MessageSquare } from 'lucide-react';
 import { generateImage } from './actions/fal';
 
 export default function Home() {
@@ -11,10 +11,13 @@ export default function Home() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'generate' | 'chat' | 'media'>('generate');
+
+  // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
-    { role: 'assistant', content: "Hello! I'm your Epic Tech AI Agent. How can I help you create today?" }
+    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent. How can I help you create something amazing today?" }
   ]);
   const [chatInput, setChatInput] = useState('');
+  const [isChatLoading, setIsChatLoading] = useState(false);
 
   const handleGenerate = async () => {
     if (!prompt.trim()) return;
@@ -33,18 +36,47 @@ export default function Home() {
     setIsGenerating(false);
   };
 
-  const sendChatMessage = () => {
-    if (!chatInput.trim()) return;
-    setChatMessages([...chatMessages, { role: 'user', content: chatInput }]);
-    setChatInput('');
+  // Real Chat with Cloudflare AI
+  const sendChatMessage = async () => {
+    if (!chatInput.trim() || isChatLoading) return;
 
-    // Simulate AI response
-    setTimeout(() => {
+    const userMessage = chatInput;
+    setChatMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setChatInput('');
+    setIsChatLoading(true);
+
+    try {
+      const response = await fetch(
+        `https://api.cloudflare.com/client/v4/accounts/${process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3-8b-instruct`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${process.env.NEXT_PUBLIC_CLOUDFLARE_API_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              { role: "system", content: "You are Epic Tech AI Agent, a helpful and creative cinematic AI assistant." },
+              ...chatMessages,
+              { role: "user", content: userMessage }
+            ],
+            max_tokens: 500,
+          }),
+        }
+      );
+
+      const data = await response.json();
+      const reply = data.result?.response || "Sorry, I couldn't process that.";
+
+      setChatMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+    } catch (err) {
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "That's a great idea! I can help you generate that. Would you like me to create an image or video version?" 
+        content: "Sorry, I'm having trouble connecting right now. Please try again." 
       }]);
-    }, 800);
+    }
+
+    setIsChatLoading(false);
   };
 
   return (
@@ -67,7 +99,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Main Area */}
+      {/* Main Content */}
       <div className="flex-1 flex flex-col">
         <div className="h-16 border-b border-white/10 flex items-center px-8 glass">
           <div className="flex items-center gap-2">
@@ -82,7 +114,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tabs */}
         <div className="flex border-b border-white/10">
           {[
             { id: 'generate', label: 'Generate', icon: <ImageIcon /> },
@@ -111,7 +143,7 @@ export default function Home() {
                 ) : isGenerating ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                    <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
+                    <p className="text-2xl font-medium">Generating...</p>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
@@ -142,40 +174,58 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat Agent Tab */}
+        {/* Chat Agent Tab - REAL AI */}
         {activeTab === 'chat' && (
           <div className="flex-1 flex flex-col p-8">
-            <div className="flex-1 overflow-y-auto space-y-4 mb-6">
+            <div className="flex-1 overflow-y-auto space-y-6 mb-6 pr-4">
               {chatMessages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[70%] p-4 rounded-3xl ${msg.role === 'user' ? 'bg-purple-600' : 'bg-white/10'}`}>
+                  <div className={`max-w-[75%] p-5 rounded-3xl ${
+                    msg.role === 'user' 
+                      ? 'bg-purple-600 text-white' 
+                      : 'bg-white/10'
+                  }`}>
                     {msg.content}
                   </div>
                 </div>
               ))}
+              {isChatLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-white/10 p-5 rounded-3xl">Thinking...</div>
+                </div>
+              )}
             </div>
+
             <div className="flex gap-3">
               <input
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && sendChatMessage()}
-                placeholder="Talk to your AI Agent..."
-                className="flex-1 bg-white/10 border border-white/30 rounded-3xl px-6 py-4 outline-none"
+                placeholder="Ask the AI Agent anything..."
+                className="flex-1 bg-white/10 border border-white/30 rounded-3xl px-6 py-4 outline-none focus:border-purple-400"
               />
-              <button onClick={sendChatMessage} className="bg-purple-600 px-8 rounded-3xl font-semibold">Send</button>
+              <button 
+                onClick={sendChatMessage}
+                disabled={isChatLoading || !chatInput.trim()}
+                className="bg-purple-600 px-10 rounded-3xl font-semibold hover:bg-purple-500 disabled:opacity-50"
+              >
+                Send
+              </button>
             </div>
           </div>
         )}
 
         {/* Media Player Tab */}
         {activeTab === 'media' && (
-          <div className="flex-1 flex items-center justify-center p-8">
-            <div className="text-center">
+          <div className="flex-1 flex items-center justify-center p-8 text-center">
+            <div>
               <Play className="w-24 h-24 mx-auto text-white/20 mb-6" />
-              <h3 className="text-2xl mb-2">Media Player</h3>
-              <p className="text-white/60">Generated videos and audio will appear here</p>
-              <p className="text-sm text-white/40 mt-8">Coming soon — MP4 & MP3 support</p>
+              <h3 className="text-3xl mb-3">Media Player</h3>
+              <p className="text-white/60 max-w-md mx-auto">
+                Generated videos and audio will appear here with full playback controls.
+              </p>
+              <p className="text-sm text-white/40 mt-8">Feature coming soon</p>
             </div>
           </div>
         )}
@@ -183,3 +233,4 @@ export default function Home() {
     </div>
   );
 }
+
