@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const { message, history } = await request.json();
 
     const response = await fetch(
-      `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct`,
+      `https://api.cloudflare.com/client/v4/accounts/${ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct-fast`,
       {
         method: 'POST',
         headers: {
