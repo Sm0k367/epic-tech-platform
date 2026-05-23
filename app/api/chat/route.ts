@@ -19,31 +19,31 @@ export async function POST(request: NextRequest) {
           messages: [
             { 
               role: "system", 
-              content: "You are Epic Tech AI Agent™️, a highly creative, cinematic, and helpful AI assistant specialized in media generation, storytelling, and creative projects." 
+              content: "You are Epic Tech AI Agent™️, a creative, cinematic, and highly intelligent AI assistant." 
             },
             ...history,
             { role: "user", content: message }
           ],
-          max_tokens: 800,
+          max_tokens: 700,
           temperature: 0.85,
         }),
       }
     );
 
     if (!response.ok) {
-      throw new Error(`Cloudflare API error: ${response.status}`);
+      throw new Error(`Cloudflare Chat Error: ${response.status}`);
     }
 
     const data = await response.json();
 
     return Response.json({ 
-      reply: data.result?.response || "Sorry, I couldn't generate a response right now." 
+      reply: data.result?.response || "Sorry, I couldn't generate a response." 
     });
 
   } catch (error) {
     console.error("Chat API Error:", error);
     return Response.json({ 
-      reply: "Sorry, I'm having trouble connecting to my brain right now. Please try again." 
+      reply: "Sorry, I'm having trouble connecting right now. Please try again." 
     });
   }
 }
