@@ -1,7 +1,7 @@
 {
   "name": "epic-tech-platform",
   "version": "1.0.0",
-  "description": "Epic Tech AI Agent™️ - Cinematic AI Creative Platform",
+  "description": "Epic Tech AI Agent™️",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -16,9 +16,9 @@
     "framer-motion": "^11.3.0",
     "groq-sdk": "^0.15.0",
     "lucide-react": "^0.441.0",
-    "next": "15.0.4",
-    "react": "19.0.0-rc-66855b96-20250326",
-    "react-dom": "19.0.0-rc-66855b96-20250326"
+    "next": "^15.0.7",
+    "react": "^19.0.0-rc-66855b96-20250326",
+    "react-dom": "^19.0.0-rc-66855b96-20250326"
   },
   "devDependencies": {
     "@types/node": "^20",
