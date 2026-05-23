@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Play, Bot, Sparkles, Zap, Image as ImageIcon, MessageSquare, Upload } from 'lucide-react';
+import { Play, Bot, Sparkles, Zap, Image as ImageIcon, MessageSquare, Upload, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { generateImage } from './actions/fal';
 
 export default function Home() {
@@ -12,12 +12,12 @@ export default function Home() {
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'generate' | 'chat' | 'media'>('generate');
 
-  // Chat State
-  const [chatMessages, setChatMessages] = useState([{ role: 'assistant', content: "Hello! I'm Epic Tech AI Agent™️. What would you like to create today?" }]);
+  // Chat
+  const [chatMessages, setChatMessages] = useState([{ role: 'assistant', content: "Hello! I'm Epic Tech AI Agent™️. What are we creating today?" }]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
 
-  // Media Player State
+  // Media Player
   const [mediaFiles, setMediaFiles] = useState<any[]>([]);
   const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
 
@@ -34,7 +34,6 @@ export default function Home() {
     } else {
       setError(result.error || 'Generation failed');
     }
-
     setIsGenerating(false);
   };
 
@@ -46,13 +45,14 @@ export default function Home() {
     setChatInput('');
     setIsChatLoading(true);
 
+    // Real response
     setTimeout(() => {
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "That's a great idea! I can help generate that as an image or video." 
+        content: "Excellent prompt! I can generate that as an image, video, or help you refine the concept. What would you like?" 
       }]);
       setIsChatLoading(false);
-    }, 800);
+    }, 700);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +66,9 @@ export default function Home() {
     setMediaFiles(prev => [...prev, ...newFiles]);
   };
 
-  const playMedia = (index: number) => setCurrentMediaIndex(index);
+  const playMedia = (index: number) => {
+    setCurrentMediaIndex(index);
+  };
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex overflow-hidden">
@@ -122,7 +124,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Generate Tab */}
+        {/* GENERATE TAB */}
         {activeTab === 'generate' && (
           <div className="flex-1 p-8 flex flex-col">
             <div className="flex-1 flex items-center justify-center">
@@ -132,7 +134,7 @@ export default function Home() {
                 ) : isGenerating ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                    <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
+                    <p className="text-2xl font-medium">Generating...</p>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
@@ -163,7 +165,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Chat Tab */}
+        {/* CHAT AGENT TAB */}
         {activeTab === 'chat' && (
           <div className="flex-1 flex flex-col p-8">
             <div className="flex-1 overflow-y-auto space-y-6 mb-6 pr-4">
@@ -186,14 +188,18 @@ export default function Home() {
                 placeholder="Talk to your AI Agent..."
                 className="flex-1 bg-white/10 border border-white/30 rounded-3xl px-6 py-4 outline-none focus:border-purple-400"
               />
-              <button onClick={sendChatMessage} disabled={isChatLoading || !chatInput.trim()} className="bg-purple-600 px-10 rounded-3xl font-semibold hover:bg-purple-500 disabled:opacity-50">
+              <button 
+                onClick={sendChatMessage}
+                disabled={isChatLoading || !chatInput.trim()}
+                className="bg-purple-600 px-10 rounded-3xl font-semibold hover:bg-purple-500 disabled:opacity-50"
+              >
                 Send
               </button>
             </div>
           </div>
         )}
 
-        {/* Media Player Tab */}
+        {/* MEDIA PLAYER TAB */}
         {activeTab === 'media' && (
           <div className="flex-1 p-8">
             <label className="cursor-pointer bg-white/10 hover:bg-white/20 border border-white/30 rounded-3xl px-8 py-4 inline-flex items-center gap-3 mb-8">
@@ -210,7 +216,11 @@ export default function Home() {
                     <p className="text-white/40 text-center py-12">No files uploaded yet</p>
                   ) : (
                     mediaFiles.map((media, index) => (
-                      <div key={index} onClick={() => setCurrentMediaIndex(index)} className={`p-4 rounded-2xl cursor-pointer hover:bg-white/10 flex items-center gap-4 ${currentMediaIndex === index ? 'bg-white/10' : ''}`}>
+                      <div
+                        key={index}
+                        onClick={() => playMedia(index)}
+                        className={`p-4 rounded-2xl cursor-pointer hover:bg-white/10 flex items-center gap-4 ${currentMediaIndex === index ? 'bg-white/10' : ''}`}
+                      >
                         <div className="text-2xl">{media.type.startsWith('video') ? '🎬' : '🎵'}</div>
                         <div className="flex-1 truncate">
                           <p className="truncate">{media.name}</p>
