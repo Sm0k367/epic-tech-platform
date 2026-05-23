@@ -129,8 +129,8 @@ npm install
 cp .env.example .env.local
 npm run dev
 
-Open http://localhost:3000 and watch magic happen. Live PreviewEpic Tech AI Agent Interface
-(Replace with your actual deployed screenshot) RoadmapCinematic UI + Video Demo
+Open http://localhost:3000 and watch magic happen. Live Preview Epic Tech AI Agent Interface
+RoadmapCinematic UI + Video Demo
 Multi-model orchestration
 Agent Memory & Character Consistency
 Real-time collaborative studio
