@@ -22,15 +22,18 @@ export async function generateImage(prompt: string) {
     );
 
     if (!response.ok) {
-      const error = await response.text();
-      throw new Error(`Cloudflare Error: ${error}`);
+      const errorText = await response.text();
+      throw new Error(`Cloudflare Error: ${errorText}`);
     }
 
     const data = await response.json();
     const imageBase64 = data.result?.image;
 
     if (!imageBase64) {
-      return { success: false, error: "No image returned from Cloudflare" };
+      return { 
+        success: false, 
+        error: "No image returned from Cloudflare. Check your API token." 
+      };
     }
 
     const imageUrl = `data:image/jpeg;base64,${imageBase64}`;
