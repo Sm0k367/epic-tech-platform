@@ -14,7 +14,7 @@ export default function Home() {
 
   // Chat State
   const [chatMessages, setChatMessages] = useState<{ role: string; content: string }[]>([
-    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent. How can I help you create today?" }
+    { role: 'assistant', content: "Hello! I'm Epic Tech AI Agent™️. How can I help you create something amazing today?" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [isChatLoading, setIsChatLoading] = useState(false);
@@ -34,7 +34,7 @@ export default function Home() {
     if (result.success && result.imageUrl) {
       setGeneratedImage(result.imageUrl);
     } else {
-      setError(result.error || 'Generation failed. Check your FAL_KEY.');
+      setError(result.error || 'Generation failed. Check your API key.');
     }
 
     setIsGenerating(false);
@@ -48,14 +48,27 @@ export default function Home() {
     setChatInput('');
     setIsChatLoading(true);
 
-    // Simulate AI response for now (you can connect real model later)
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMessage, history: chatMessages }),
+      });
+
+      const data = await response.json();
+
       setChatMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: "That's a fantastic idea! I can help you generate that. Would you like an image or video version?" 
+        content: data.reply || "Sorry, I couldn't respond right now." 
       }]);
-      setIsChatLoading(false);
-    }, 900);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: "Sorry, I'm having trouble connecting. Please try again." 
+      }]);
+    }
+
+    setIsChatLoading(false);
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,7 +100,7 @@ export default function Home() {
           {['Video Visionary', 'Artist Agent', 'Prompt Pilot', 'Cyber Director', 'Story Weaver'].map((name) => (
             <div key={name} className="flex items-center gap-3 px-5 py-4 rounded-2xl hover:bg-white/10 cursor-pointer transition-all">
               <Bot className="w-5 h-5 text-purple-400" />
-              <span>{name}</span>
+              <span className="font-medium">{name}</span>
             </div>
           ))}
         </div>
@@ -137,7 +150,7 @@ export default function Home() {
                 ) : isGenerating ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="w-20 h-20 border-4 border-purple-400 border-t-transparent rounded-full animate-spin mb-6"></div>
-                    <p className="text-2xl font-medium">Generating...</p>
+                    <p className="text-2xl font-medium">Generating with Flux Schnell...</p>
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center text-[160px] text-white/10">▶️</div>
@@ -214,12 +227,11 @@ export default function Home() {
             </label>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              {/* Playlist */}
               <div className="bg-white/5 rounded-3xl p-6 border border-white/10">
                 <h3 className="font-semibold mb-4">Your Library ({mediaFiles.length})</h3>
                 <div className="space-y-2 max-h-[500px] overflow-y-auto">
                   {mediaFiles.length === 0 ? (
-                    <p className="text-white/40 text-center py-12">No files yet. Upload some MP3 or MP4 files.</p>
+                    <p className="text-white/40 text-center py-12">No files uploaded yet</p>
                   ) : (
                     mediaFiles.map((media, index) => (
                       <div
@@ -237,7 +249,6 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Player */}
               <div className="bg-zinc-950 rounded-3xl border border-white/10 p-6 flex flex-col">
                 {mediaFiles.length > 0 ? (
                   <div>
