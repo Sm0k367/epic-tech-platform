@@ -8,23 +8,21 @@ const HUGGINGFACE_API_KEY = process.env.HUGGINGFACE_API_KEY;
 export async function POST(request: NextRequest) {
   try {
     const { message, history } = await request.json();
-
     const systemPrompt = {
       role: "system",
-      content: "You are Epic Tech AI Agent™️, a creative, cinematic, and highly intelligent AI assistant specialized in media generation, film, video, and visual storytelling."
+      content: "You are Epic Tech AI Agent™️, a creative, cinematic, and highly intelligent AI assistant specialized in media generation."
     };
 
-    // === 1. Cloudflare (Primary) ===
+    let provider = "unknown";
+
+    // 1. Cloudflare (Primary)
     if (CLOUDFLARE_ACCOUNT_ID && CLOUDFLARE_API_TOKEN) {
       try {
         const cfRes = await fetch(
           `https://api.cloudflare.com/client/v4/accounts/${CLOUDFLARE_ACCOUNT_ID}/ai/run/@cf/meta/llama-3.1-8b-instruct-fast`,
           {
             method: 'POST',
-            headers: {
-              Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { Authorization: `Bearer ${CLOUDFLARE_API_TOKEN}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               messages: [systemPrompt, ...history, { role: "user", content: message }],
               max_tokens: 750,
@@ -35,22 +33,20 @@ export async function POST(request: NextRequest) {
 
         if (cfRes.ok) {
           const data = await cfRes.json();
-          return Response.json({ reply: data.result?.response || "Understood!" });
+          return Response.json({ 
+            reply: data.result?.response || "Understood!", 
+            provider: "Cloudflare" 
+          });
         }
-      } catch (e) {
-        console.log("→ Cloudflare failed, trying Groq...");
-      }
+      } catch (e) { /* fallback */ }
     }
 
-    // === 2. Groq (Fast Secondary) ===
+    // 2. Groq
     if (GROQ_API_KEY) {
       try {
         const groqRes = await fetch('https://api.groq.com/openai/v1/chat/completions', {
           method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${GROQ_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Authorization': `Bearer ${GROQ_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             model: "llama-3.3-70b-versatile",
             messages: [systemPrompt, ...history, { role: "user", content: message }],
@@ -62,32 +58,24 @@ export async function POST(request: NextRequest) {
         if (groqRes.ok) {
           const data = await groqRes.json();
           return Response.json({ 
-            reply: data.choices?.[0]?.message?.content || "Got it!" 
+            reply: data.choices?.[0]?.message?.content || "Got it!", 
+            provider: "Groq" 
           });
         }
-      } catch (e) {
-        console.log("→ Groq failed, trying Hugging Face...");
-      }
+      } catch (e) { /* fallback */ }
     }
 
-    // === 3. Hugging Face (Reliable Fallback) ===
+    // 3. Hugging Face
     if (HUGGINGFACE_API_KEY) {
       try {
         const hfRes = await fetch(
           "https://api-inference.huggingface.co/models/meta-llama/Llama-3.3-70B-Instruct",
           {
             method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`,
-              'Content-Type': 'application/json',
-            },
+            headers: { 'Authorization': `Bearer ${HUGGINGFACE_API_KEY}`, 'Content-Type': 'application/json' },
             body: JSON.stringify({
               inputs: message,
-              parameters: {
-                max_new_tokens: 750,
-                temperature: 0.85,
-                return_full_text: false,
-              }
+              parameters: { max_new_tokens: 750, temperature: 0.85, return_full_text: false }
             }),
           }
         );
@@ -95,22 +83,24 @@ export async function POST(request: NextRequest) {
         if (hfRes.ok) {
           const data = await hfRes.json();
           const reply = Array.isArray(data) ? data[0]?.generated_text : data.generated_text;
-          return Response.json({ reply: reply || "I understand!" });
+          return Response.json({ 
+            reply: reply || "I understand!", 
+            provider: "Hugging Face" 
+          });
         }
-      } catch (e) {
-        console.error("Hugging Face also failed");
-      }
+      } catch (e) { /* fallback */ }
     }
 
-    // Ultimate fallback
-    return Response.json({
-      reply: "All AI providers are currently busy. Please try again in a moment."
+    return Response.json({ 
+      reply: "All AI providers are currently busy. Please try again shortly.", 
+      provider: "None" 
     });
 
   } catch (error) {
     console.error("Chat Error:", error);
-    return Response.json({
-      reply: "Sorry, I'm experiencing technical difficulties right now."
+    return Response.json({ 
+      reply: "Sorry, I'm having trouble connecting right now.", 
+      provider: "Error" 
     });
   }
 }
