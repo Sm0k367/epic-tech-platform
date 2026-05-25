@@ -1,0 +1,14 @@
+name = "epic-tech-platform"
+main = "worker.js"
+compatibility_date = "2025-05-01"
+
+[ai]
+binding = "AI"
+
+[[kv_namespaces]]
+binding = "KV"
+id = "example-kv-id"  # Replace with real KV namespace ID if you create one
+
+# Optional: For larger responses or longer timeouts
+# [limits]
+# cpu_ms = 30000
